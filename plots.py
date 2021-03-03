@@ -67,7 +67,7 @@ def plot_classifier(clf, X, y, X_test=None, y_test=None, title=None, target_name
 
     P = clf.predict(np.c_[xx.ravel(), yy.ravel()])
     P = P.reshape(xx.shape)
-    plt.figure()
+    plt.figure(figsize=(10, 8)
     plt.contourf(xx, yy, P, cmap=cmap_light, alpha = 0.8)
 
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=cmap_bold, 
