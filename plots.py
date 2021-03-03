@@ -91,4 +91,3 @@ def plot_classifier(clf, X, y, X_test=None, y_test=None, title=None, target_name
 
     if (title is not None):
         plt.title(title)
-    plt.show()
