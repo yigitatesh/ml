@@ -2,51 +2,52 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 import matplotlib.patches as mpatches
-import seaborn as sns
 
-def knn_classifier_plot(clf, X_test, y_test, labels=None):
-    plt.figure()
+def plot_decision_boundary(model, X, y, steps=1000, cmap='RdBu'):
+    """
+    Function to plot the decision boundary and data points of a model.
+    Data points are colored based on their actual label.
+    """
+    cmap = plt.get_cmap(cmap)
     
-    # classes
-    classes = list(set(y_test))
+    # Define region of interest by data limits
+    xmin, xmax = X[:,0].min() - 0.1, X[:,0].max() + 0.1
+    ymin, ymax = X[:,1].min() - 0.1, X[:,1].max() + 0.1
+    steps = 1000
+    x_span = np.linspace(xmin, xmax, steps)
+    y_span = np.linspace(ymin, ymax, steps)
+    xx, yy = np.meshgrid(x_span, y_span)
+
+    # Make predictions across region of interest
+    # first try to predict probabilities
+    try: 
+        preds = []
+        for pred in model.predict_proba(np.c_[xx.ravel(), yy.ravel()]):
+            if pred[0] > pred[1]:
+                preds.append(1 - pred[0])
+            else:
+                preds.append(pred[1])
+        labels = np.array(preds)
+    # predict just labels
+    except:
+        labels = model.predict(np.c_[xx.ravel(), yy.ravel()])
+
+    # Plot decision boundary in region of interest
+    z = labels.reshape(xx.shape)
     
-    # color maps
-    colors_bold = ['#FF0000', '#0000FF', '#00FF00', '#00FFFF'][:len(classes)]
-    colors_light = ['#FFAAAA', '#AAAAFF', '#AAFFAA', '#AAFFFF'][:len(classes)]
-    cmap_light = ListedColormap(colors_light)
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.contourf(xx, yy, z, cmap=cmap, alpha=0.4)
+
+    # Get predicted labels on training data and plot
+    train_labels = model.predict(X)
+    ax.scatter(X[:,0], X[:,1], c=y, cmap=cmap, lw=0)
     
-    # numpy arrays for region coloring
-    x_min, x_max = X_test[:, 0].min(), X_test[:, 0].max()
-    
-    mesh_step_size = (x_max - x_min) / 100
-    step = mesh_step_size * 10
-    x_min, x_max = X_test[:, 0].min() - step, X_test[:, 0].max() + step
-    y_min, y_max = X_test[:, 1].min() - step, X_test[:, 1].max() + step
-    
-    xx, yy = np.meshgrid(np.arange(x_min, x_max, mesh_step_size), 
-                         np.arange(y_min, y_max, mesh_step_size))
-    
-    # predictions
-    Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
-    Z = Z.reshape(xx.shape)
-    
-    # plotting
-    plt.pcolormesh(xx, yy, Z, cmap=cmap_light)
-    if labels is not None:
-        for i, cls in enumerate(classes):
-            plt.scatter(X_test[y_test == cls, 0], X_test[y_test == cls, 1], c=colors_bold[i], alpha=0.8, label=labels[i])
-    else:
-        for i, cls in enumerate(classes):
-            plt.scatter(X_test[y_test == cls, 0], X_test[y_test == cls, 1], c=colors_bold[i], alpha=0.8, label=str(cls))
-            
-    plt.xlim(xx.min(), xx.max())
-    plt.ylim(yy.min(), yy.max())
-    plt.title("KNN Classifier Regions")
-    
-    plt.legend()
     plt.show()
+    
+    return fig, ax
 
 def plot_classifier(clf, X, y, X_test=None, y_test=None, title=None, target_names = None):
+	"""Works for multiple classes"""
     numClasses = np.amax(y) + 1
     color_list_light = ['#FFFFAA', '#EFEFEF', '#AAFFAA', '#AAAAFF']
     color_list_bold = ['#EEEE00', '#000000', '#00CC00', '#0000CC']
@@ -67,7 +68,7 @@ def plot_classifier(clf, X, y, X_test=None, y_test=None, title=None, target_name
 
     P = clf.predict(np.c_[xx.ravel(), yy.ravel()])
     P = P.reshape(xx.shape)
-    plt.figure(figsize=(10, 8))
+    plt.figure()
     plt.contourf(xx, yy, P, cmap=cmap_light, alpha = 0.8)
 
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=cmap_bold, 
@@ -91,3 +92,5 @@ def plot_classifier(clf, X, y, X_test=None, y_test=None, title=None, target_name
 
     if (title is not None):
         plt.title(title)
+    plt.show()
+    
