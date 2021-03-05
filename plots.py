@@ -87,8 +87,50 @@ def plot_decision_boundary(model, X, y, steps=1000, cmap='RdBu'):
 
     # Get predicted labels on training data and plot
     train_labels = model.predict(X)
-    ax.scatter(X[:,0], X[:,1], c=y, cmap=cmap, lw=0)
+    ax.scatter(X[:,0], X[:,1], c=y, cmap=cmap, lw=0, s=50)
     
     plt.show()
     
     return fig, ax
+
+def knn_classifier_plot(clf, X_test, y_test, labels=None):
+    plt.figure()
+    
+    # classes
+    classes = list(set(y_test))
+    
+    # color maps
+    colors_bold = ['#FF0000', '#0000FF', '#00FF00', '#00FFFF'][:len(classes)]
+    colors_light = ['#FFAAAA', '#AAAAFF', '#AAFFAA', '#AAFFFF'][:len(classes)]
+    cmap_light = ListedColormap(colors_light)
+    
+    # numpy arrays for region coloring
+    x_min, x_max = X_test[:, 0].min(), X_test[:, 0].max()
+    
+    mesh_step_size = (x_max - x_min) / 100
+    step = mesh_step_size * 10
+    x_min, x_max = X_test[:, 0].min() - step, X_test[:, 0].max() + step
+    y_min, y_max = X_test[:, 1].min() - step, X_test[:, 1].max() + step
+    
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, mesh_step_size), 
+                         np.arange(y_min, y_max, mesh_step_size))
+    
+    # predictions
+    Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z = Z.reshape(xx.shape)
+    
+    # plotting
+    plt.pcolormesh(xx, yy, Z, cmap=cmap_light)
+    if labels is not None:
+        for i, cls in enumerate(classes):
+            plt.scatter(X_test[y_test == cls, 0], X_test[y_test == cls, 1], c=colors_bold[i], alpha=0.8, label=labels[i])
+    else:
+        for i, cls in enumerate(classes):
+            plt.scatter(X_test[y_test == cls, 0], X_test[y_test == cls, 1], c=colors_bold[i], alpha=0.8, label=str(cls))
+            
+    plt.xlim(xx.min(), xx.max())
+    plt.ylim(yy.min(), yy.max())
+    plt.title("KNN Classifier Regions")
+    
+    plt.legend()
+    plt.show()
