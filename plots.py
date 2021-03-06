@@ -68,13 +68,8 @@ def plot_decision_boundary(model, X, y, steps=1000, cmap='RdBu'):
     # Make predictions across region of interest
     # first try to predict probabilities
     try: 
-        preds = []
-        for pred in model.predict_proba(np.c_[xx.ravel(), yy.ravel()]):
-            if pred[0] > pred[1]:
-                preds.append(1 - pred[0])
-            else:
-                preds.append(pred[1])
-        labels = np.array(preds)
+        preds = model.predict_proba(np.c_[xx.ravel(), yy.ravel()])[:, 1]
+        labels = (preds - preds.min()) / (preds.max() - preds.min())
     # predict just labels
     except:
         labels = model.predict(np.c_[xx.ravel(), yy.ravel()])
