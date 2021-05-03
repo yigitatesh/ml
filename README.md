@@ -1,2 +1,2 @@
-# ml
-Machine Learning models from scratch
+# Machine Learning Algorithms from Scratch
+
